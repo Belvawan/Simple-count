@@ -1,0 +1,454 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Counter</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            min-height: 100vh;
+            background: linear-gradient(to bottom, #000000, #2d2d2d);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Arial', sans-serif;
+            padding: 20px;
+            transition: background 0.5s ease;
+        }
+        
+        .container {
+            background-color: #1a1a1a;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+            z-index: 1;
+        }
+        
+        .btn {
+            position: absolute;
+            top: 20px;
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        
+        .btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+        
+        .theme-options {
+            position: absolute;
+            top: 65px;
+            right: 20px;
+            background-color: #1a1a1a;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            z-index: 10;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+        
+        .theme-options.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .info-options {
+            position: absolute;
+            top: 65px;
+            right: 80px;
+            background-color: #1a1a1a;
+            border-radius: 15px;
+            padding: 25px 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            z-index: 10;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            width: 220px;
+            text-align: center;
+        }
+        
+        .info-options.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .theme-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            margin: 5px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-option:hover {
+            transform: scale(1.1);
+            border-color: white;
+        }
+        
+        .theme-blue {
+            background: linear-gradient(45deg, #000046, #1cb5e0);
+        }
+        
+        .theme-purple {
+            background: linear-gradient(45deg, #16222A, #3A6073);
+        }
+        
+        .theme-red {
+            background: linear-gradient(45deg, #870000, #190A05);
+        }
+        
+        .theme-green {
+            background: linear-gradient(45deg, #000000, #0f2027);
+        }
+        
+        .info-content {
+            color: white;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        .info-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .social-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .social-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #87CEEB;
+            text-decoration: none;
+            font-size: 1rem;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background-color: rgba(135, 206, 235, 0.1);
+            transition: all 0.2s ease;
+        }
+        
+        .social-link:hover {
+            background-color: rgba(135, 206, 235, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .social-icon {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .username {
+            font-weight: bold;
+        }
+        
+        h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+        
+        .display {
+            background-color: #2a2a2a;
+            border-radius: 15px;
+            padding: 25px 20px;
+            margin-bottom: 30px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .count {
+            color: white;
+            font-size: 4rem;
+            font-weight: bold;
+            line-height: 1;
+        }
+        
+        .buttons {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .btn-action {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            background-color: #dc3545;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        
+        .btn-action:focus {
+            outline: none;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+        }
+        
+        .btn-action:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.5);
+        }
+        
+        .btn-action:active {
+            transform: scale(0.95);
+        }
+        
+        .btn-action.increment {
+            background-color: #28a745;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        }
+        
+        .btn-action.increment:focus {
+            outline: none;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        }
+        
+        .btn-action.increment:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.5);
+        }
+        
+        .btn-action.reset {
+            padding: 10px 20px;
+            background-color: #6c757d;
+            border-radius: 25px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4);
+            width: auto;
+            height: auto;
+            outline: none;
+        }
+        
+        .btn-action.reset:focus {
+            outline: none;
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4);
+        }
+        
+        .btn-action.reset:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(108, 117, 125, 0.5);
+        }
+        
+        footer {
+            margin-top: 30px;
+            color: #888;
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 10px;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .footer-text {
+            color: #666;
+        }
+        
+        .footer-highlight {
+            color: #999;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="btn" id="themeToggle" aria-label="Change theme">
+            <i data-lucide="palette"></i>
+        </button>
+        
+        <button class="btn" id="infoToggle" style="right: 20px;" aria-label="About">
+            <i data-lucide="info"></i>
+        </button>
+        
+        <div class="theme-options" id="themeOptions">
+            <div class="theme-option theme-blue" data-theme="blue" title="Blue Theme"></div>
+            <div class="theme-option theme-purple" data-theme="purple" title="Purple Theme"></div>
+            <div class="theme-option theme-red" data-theme="red" title="Red Theme"></div>
+            <div class="theme-option theme-green" data-theme="green" title="Green Theme"></div>
+        </div>
+        
+        <div class="info-options" id="infoOptions">
+            <div class="info-content">
+                <div class="info-title">Simple Counter • By Belvawan</div>
+                <div class="social-container">
+                    <a href="https://instagram.com/blvawannn" class="social-link" target="_blank">
+                        <i data-lucide="instagram" class="social-icon"></i>
+                        <span class="username">@blvawannn</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <h1>Counter</h1>
+        <div class="display">
+            <div class="count" id="count">0</div>
+        </div>
+        <div class="buttons">
+            <button class="btn-action" id="decrement" aria-label="Decrement">
+                <i data-lucide="minus"></i>
+            </button>
+            <button class="btn-action reset" id="reset">Reset</button>
+            <button class="btn-action increment" id="increment" aria-label="Increment">
+                <i data-lucide="plus"></i>
+            </button>
+        </div>
+    </div>
+    
+    <footer>
+        <p class="footer-text">&copy;2025 Belvawan • <span class="footer-highlight">Semua Hak Dilindungi</span></p>
+    </footer>
+
+    <script>
+        // Initialize lucide icons
+        lucide.createIcons();
+        
+        // Theme elements
+        const themeToggle = document.getElementById('themeToggle');
+        const themeOptions = document.getElementById('themeOptions');
+        const themeOptionsList = document.querySelectorAll('.theme-option');
+        
+        // Info elements
+        const infoToggle = document.getElementById('infoToggle');
+        const infoOptions = document.getElementById('infoOptions');
+        
+        // Body
+        const body = document.body;
+        
+        // Counter elements
+        const countElement = document.getElementById('count');
+        const incrementBtn = document.getElementById('increment');
+        const decrementBtn = document.getElementById('decrement');
+        const resetBtn = document.getElementById('reset');
+        
+        let count = 0;
+        
+        // Theme functionality
+        themeToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            themeOptions.classList.toggle('active');
+            // Close info if open
+            infoOptions.classList.remove('active');
+        });
+        
+        // Info functionality
+        infoToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            infoOptions.classList.toggle('active');
+            // Close theme if open
+            themeOptions.classList.remove('active');
+        });
+        
+        // Close popups when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!themeOptions.contains(e.target) && e.target !== themeToggle && 
+                !infoOptions.contains(e.target) && e.target !== infoToggle) {
+                themeOptions.classList.remove('active');
+                infoOptions.classList.remove('active');
+            }
+        });
+        
+        // Apply theme when a theme option is clicked
+        themeOptionsList.forEach(option => {
+            option.addEventListener('click', () => {
+                const theme = option.getAttribute('data-theme');
+                
+                switch(theme) {
+                    case 'blue':
+                        body.style.background = 'linear-gradient(45deg, #000046, #1cb5e0)';
+                        break;
+                    case 'purple':
+                        body.style.background = 'linear-gradient(45deg, #16222A, #3A6073)';
+                        break;
+                    case 'red':
+                        body.style.background = 'linear-gradient(45deg, #870000, #190A05)';
+                        break;
+                    case 'green':
+                        body.style.background = 'linear-gradient(45deg, #000000, #0f2027)';
+                        break;
+                    default:
+                        body.style.background = 'linear-gradient(to bottom, #000000, #2d2d2d)';
+                }
+                
+                // Close the theme options
+                themeOptions.classList.remove('active');
+            });
+        });
+        
+        // Counter logic
+        function updateDisplay() {
+            countElement.textContent = count;
+        }
+        
+        incrementBtn.addEventListener('click', () => {
+            count++;
+            updateDisplay();
+        });
+        
+        decrementBtn.addEventListener('click', () => {
+            count--;
+            updateDisplay();
+        });
+        
+        resetBtn.addEventListener('click', () => {
+            count = 0;
+            updateDisplay();
+        });
+    </script>
+</body>
+</html>
