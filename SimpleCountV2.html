@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Counter</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            min-height: 100vh;
+            background: linear-gradient(to bottom, #0f0f0f, #1a1a1a);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Arial', sans-serif;
+            padding: 20px;
+            transition: background 0.5s ease;
+            position: relative;
+        }
+        
+        /* Tombol menu di pojok kanan atas layar */
+        .menu-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 12px;
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            outline: none;
+            flex-direction: column;
+            gap: 3px;
+            z-index: 100;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .menu-line {
+            width: 18px;
+            height: 2px;
+            background-color: white;
+            transition: all 0.3s ease;
+            border-radius: 1px;
+        }
+        
+        .menu-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Sidebar menu dengan animasi sederhana */
+        .sidebar {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            width: 280px;
+            background-color: rgba(20, 20, 20, 0.9);
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            z-index: 99;
+            transform: translateX(100%);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+        
+        .sidebar.active {
+            transform: translateX(0);
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .sidebar-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ddd;
+            font-weight: 600;
+            font-size: 1.1rem;
+            background: rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar-content {
+            padding: 20px;
+        }
+        
+        .sidebar-section {
+            margin-bottom: 25px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar.active .sidebar-section {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .sidebar-section:nth-child(1) { transition-delay: 0.1s; }
+        .sidebar-section:nth-child(2) { transition-delay: 0.2s; }
+        .sidebar-section:nth-child(3) { transition-delay: 0.3s; }
+        .sidebar-section:nth-child(4) { transition-delay: 0.4s; }
+        
+        .sidebar-title {
+            color: #aaa;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+        
+        .theme-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .theme-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        
+        .sidebar.active .theme-option {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .theme-option:nth-child(1) { transition-delay: 0.5s; }
+        .theme-option:nth-child(2) { transition-delay: 0.55s; }
+        .theme-option:nth-child(3) { transition-delay: 0.6s; }
+        .theme-option:nth-child(4) { transition-delay: 0.65s; }
+        .theme-option:nth-child(5) { transition-delay: 0.7s; }
+        .theme-option:nth-child(6) { transition-delay: 0.75s; }
+        .theme-option:nth-child(7) { transition-delay: 0.8s; }
+        .theme-option:nth-child(8) { transition-delay: 0.85s; }
+        .theme-option:nth-child(9) { transition-delay: 0.9s; }
+        .theme-option:nth-child(10) { transition-delay: 0.95s; }
+        .theme-option:nth-child(11) { transition-delay: 1.0s; }
+        .theme-option:nth-child(12) { transition-delay: 1.05s; }
+        
+        .theme-option:hover {
+            transform: scale(1.05);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .theme-option.active {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 3px white, 0 0 0 5px rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Tema warna soft */
+        .theme-default { background: linear-gradient(45deg, #0f0f0f, #1a1a1a); }
+        .theme-blue { background: linear-gradient(45deg, #1a3a5a, #2a5a8a); }
+        .theme-purple { background: linear-gradient(45deg, #3a2a4a, #5a4a7a); }
+        .theme-red { background: linear-gradient(45deg, #5a2a2a, #8a4a4a); }
+        .theme-green { background: linear-gradient(45deg, #2a4a3a, #4a7a5a); }
+        .theme-orange { background: linear-gradient(45deg, #7a4a2a, #aa7a4a); }
+        .theme-pink { background: linear-gradient(45deg, #7a3a5a, #aa5a8a); }
+        .theme-cyan { background: linear-gradient(45deg, #2a5a7a, #4a8aaa); }
+        .theme-teal { background: linear-gradient(45deg, #2a5a5a, #4a8a8a); }
+        .theme-indigo { background: linear-gradient(45deg, #4a3a7a, #7a5aaa); }
+        .theme-mint { background: linear-gradient(45deg, #3a7a6a, #5aaa9a); }
+        .theme-lavender { background: linear-gradient(45deg, #6a5a8a, #9a8aaa); }
+        
+        /* Input section */
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .input-field {
+            flex: 1;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            padding: 10px 12px;
+            font-size: 0.95rem;
+            width: 100%;
+            backdrop-filter: blur(5px);
+            transition: all 0.2s ease;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #4a8a8a;
+            background-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 2px rgba(74, 138, 138, 0.25);
+        }
+        
+        .input-btn-action {
+            background-color: rgba(74, 138, 138, 0.8);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            padding: 10px 12px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        
+        .sidebar.active .input-btn-action {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 1.15s;
+        }
+        
+        .input-btn-action:hover {
+            background-color: rgba(74, 138, 138, 0.9);
+            transform: scale(1.03);
+        }
+        
+        /* Limit section */
+        .limit-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .limit-field {
+            flex: 1;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            padding: 10px 12px;
+            font-size: 0.95rem;
+            width: 100%;
+            backdrop-filter: blur(5px);
+            transition: all 0.2s ease;
+        }
+        
+        .limit-field:focus {
+            outline: none;
+            border-color: #4a8a8a;
+            background-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 2px rgba(74, 138, 138, 0.25);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+            opacity: 0;
+            transform: translateX(10px);
+        }
+        
+        .sidebar.active .toggle-switch {
+            opacity: 1;
+            transform: translateX(0);
+            transition-delay: 1.25s;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #444;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        .toggle-input:checked + .toggle-slider {
+            background-color: #4a8a8a;
+        }
+        
+        .toggle-input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        .toggle-input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .limit-label {
+            color: #ccc;
+            font-size: 0.8rem;
+            min-width: 50px;
+        }
+        
+        .info-content {
+            color: #ddd;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        .info-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        
+        .info-description {
+            color: #aaa;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        
+        .support-container {
+            margin-top: 10px;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .support-link {
+            color: #66cccc;
+            text-decoration: underline;
+            text-decoration-color: rgba(102, 204, 204, 0.5);
+            text-underline-offset: 3px;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        
+        .sidebar.active .support-link {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 1.35s;
+        }
+        
+        .support-link:hover {
+            color: #88e0e0;
+            text-decoration-color: #88e0e0;
+            text-shadow: 0 0 5px rgba(136, 224, 224, 0.4);
+        }
+        
+        .social-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .social-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #66cccc;
+            text-decoration: none;
+            font-size: 0.95rem;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background-color: rgba(102, 204, 204, 0.1);
+            transition: all 0.2s ease;
+            width: fit-content;
+            margin: 0 auto;
+            border: 1px solid rgba(102, 204, 204, 0.15);
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        
+        .sidebar.active .social-link {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar.active .social-link:nth-child(1) { transition-delay: 1.45s; }
+        
+        .social-link:hover {
+            background-color: rgba(102, 204, 204, 0.15);
+            transform: scale(1.03);
+            border-color: rgba(102, 204, 204, 0.25);
+        }
+        
+        .social-icon {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .username {
+            font-weight: 500;
+        }
+        
+        .container {
+            background-color: rgba(25, 25, 25, 0.85);
+            border-radius: 16px;
+            padding: 35px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            z-index: 1;
+        }
+        
+        h1 {
+            color: #ddd;
+            font-size: 2.3rem;
+            margin-bottom: 25px;
+            font-weight: 600;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        
+        .display {
+            background-color: rgba(35, 35, 35, 0.8);
+            border-radius: 12px;
+            padding: 22px 18px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .count {
+            color: white;
+            font-size: 3.8rem;
+            font-weight: 700;
+            line-height: 1;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+        
+        .limit-info {
+            color: #88cccc;
+            font-size: 0.9rem;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+        
+        .limit-info.negative {
+            color: #ff6b6b;
+        }
+        
+        .buttons {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+        }
+        
+        .btn-action {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 55px;
+            height: 55px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            background-color: rgba(180, 60, 60, 0.8);
+            color: white;
+            font-size: 1.4rem;
+            font-weight: bold;
+            box-shadow: 0 3px 12px rgba(180, 60, 60, 0.3);
+            transition: all 0.2s ease;
+            outline: none;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .btn-action:focus {
+            outline: none;
+        }
+        
+        .btn-action:hover {
+            transform: scale(1.08);
+            box-shadow: 0 4px 15px rgba(180, 60, 60, 0.4);
+            background-color: rgba(180, 60, 60, 0.9);
+        }
+        
+        .btn-action:active {
+            transform: scale(0.97);
+            background-color: rgba(180, 60, 60, 1);
+        }
+        
+        .btn-action.increment {
+            background-color: rgba(74, 138, 138, 0.8);
+            box-shadow: 0 3px 12px rgba(74, 138, 138, 0.3);
+        }
+        
+        .btn-action.increment:hover {
+            transform: scale(1.08);
+            box-shadow: 0 4px 15px rgba(74, 138, 138, 0.4);
+            background-color: rgba(74, 138, 138, 0.9);
+        }
+        
+        .btn-action.increment:active {
+            transform: scale(0.97);
+            background-color: rgba(74, 138, 138, 1);
+        }
+        
+        .btn-action.reset {
+            padding: 9px 18px;
+            background-color: rgba(100, 100, 100, 0.8);
+            border-radius: 22px;
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 500;
+            box-shadow: 0 3px 12px rgba(100, 100, 100, 0.3);
+            width: auto;
+            height: auto;
+            outline: none;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .btn-action.reset:hover {
+            transform: scale(1.08);
+            box-shadow: 0 4px 15px rgba(100, 100, 100, 0.4);
+            background-color: rgba(100, 100, 100, 0.9);
+        }
+        
+        .btn-action.reset:active {
+            transform: scale(0.97);
+            background-color: rgba(100, 100, 100, 1);
+        }
+        
+        footer {
+            margin-top: 25px;
+            color: #777;
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 8px;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .footer-text {
+            color: #666;
+        }
+        
+        .footer-highlight {
+            color: #888;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <!-- Tombol menu di pojok kanan atas layar -->
+    <button class="menu-btn" id="menuToggle" aria-label="Settings Menu">
+        <span class="menu-line"></span>
+        <span class="menu-line"></span>
+        <span class="menu-line"></span>
+    </button>
+    
+    <!-- Sidebar menu dengan semua fitur -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">Pengaturan</div>
+        <div class="sidebar-content">
+            <!-- Tema -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">Tema</div>
+                <div class="theme-options">
+                    <div class="theme-option theme-default active" data-theme="default" title="Tema Default"></div>
+                    <div class="theme-option theme-blue" data-theme="blue" title="Tema Biru"></div>
+                    <div class="theme-option theme-purple" data-theme="purple" title="Tema Ungu"></div>
+                    <div class="theme-option theme-red" data-theme="red" title="Tema Merah"></div>
+                    <div class="theme-option theme-green" data-theme="green" title="Tema Hijau"></div>
+                    <div class="theme-option theme-orange" data-theme="orange" title="Tema Orange"></div>
+                    <div class="theme-option theme-pink" data-theme="pink" title="Tema Pink"></div>
+                    <div class="theme-option theme-cyan" data-theme="cyan" title="Tema Cyan"></div>
+                    <div class="theme-option theme-teal" data-theme="teal" title="Tema Teal"></div>
+                    <div class="theme-option theme-indigo" data-theme="indigo" title="Tema Indigo"></div>
+                    <div class="theme-option theme-mint" data-theme="mint" title="Tema Mint"></div>
+                    <div class="theme-option theme-lavender" data-theme="lavender" title="Tema Lavender"></div>
+                </div>
+            </div>
+            
+            <!-- Input angka -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">Atur Angka</div>
+                <div class="input-group">
+                    <input type="number" id="directInput" class="input-field" placeholder="Masukkan angka" value="0">
+                    <button id="setBtn" class="input-btn-action">Atur</button>
+                </div>
+            </div>
+            
+            <!-- Fitur limit -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">Batas Hitung</div>
+                <div class="limit-container">
+                    <input type="number" id="limitInput" class="limit-field" placeholder="Masukkan batas" value="20">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="limitToggle" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="limit-label">ON/OFF</span>
+                </div>
+                <p style="color: #aaa; font-size: 0.75rem; margin-top: 5px;">
+                    Aktifkan untuk membatasi jumlah hitungan.
+                </p>
+            </div>
+            
+            <!-- Kredit -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">Kredit</div>
+                <div class="info-content">
+                    <div class="info-title">Simple Counter • By Belvawan</div>
+                    <div class="info-description">
+                        Simple Counter adalah alat penghitung simple dan menyimpan hitungan angka.
+                    </div>
+                    <div class="support-container">
+                        <a href="https://sociabuzz.com/awwannn" target="_blank" class="support-link">Support saya beli kopi</a>
+                    </div>
+                    <div class="social-container">
+                        <a href="https://instagram.com/blvawannn" class="social-link" target="_blank">
+                            <i data-lucide="instagram" class="social-icon"></i>
+                            <span class="username">@blvawannn</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Counter Container -->
+    <div class="container">
+        <h1>Counter</h1>
+        <div class="display">
+            <div class="count" id="count">0</div>
+            <div class="limit-info" id="limitInfo">20 tersedia</div>
+        </div>
+        <div class="buttons">
+            <button class="btn-action" id="decrement" aria-label="Kurangi">
+                <i data-lucide="minus"></i>
+            </button>
+            <button class="btn-action reset" id="reset">Reset</button>
+            <button class="btn-action increment" id="increment" aria-label="Tambah">
+                <i data-lucide="plus"></i>
+            </button>
+        </div>
+    </div>
+    
+    <footer>
+        <p class="footer-text">&copy;2025 Belvawan • <span class="footer-highlight">Semua Hak Dilindungi</span></p>
+    </footer>
+
+    <script>
+        // Initialize lucide icons
+        lucide.createIcons();
+        
+        // Menu elements
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        
+        // Theme elements
+        const themeOptions = document.querySelectorAll('.theme-option');
+        
+        // Body
+        const body = document.body;
+        
+        // Counter elements
+        const countElement = document.getElementById('count');
+        const incrementBtn = document.getElementById('increment');
+        const decrementBtn = document.getElementById('decrement');
+        const resetBtn = document.getElementById('reset');
+        const limitInfo = document.getElementById('limitInfo');
+        
+        // Settings elements
+        const directInput = document.getElementById('directInput');
+        const setBtn = document.getElementById('setBtn');
+        const limitInput = document.getElementById('limitInput');
+        const limitToggle = document.getElementById('limitToggle');
+        
+        let count = 0;
+        let limit = 20;
+        let isLimitEnabled = false;
+        
+        // Menu functionality
+        menuToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            menuToggle.classList.toggle('active');
+            sidebar.classList.toggle('active');
+        });
+        
+        // Close sidebar when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!sidebar.contains(e.target) && e.target !== menuToggle && !menuToggle.contains(e.target)) {
+                sidebar.classList.remove('active');
+                menuToggle.classList.remove('active');
+            }
+        });
+        
+        // Apply theme when a theme option is clicked
+        themeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                // Remove active class from all themes
+                themeOptions.forEach(opt => opt.classList.remove('active'));
+                // Add active class to clicked theme
+                option.classList.add('active');
+                
+                const theme = option.getAttribute('data-theme');
+                
+                switch(theme) {
+                    case 'default':
+                        body.style.background = 'linear-gradient(to bottom, #0f0f0f, #1a1a1a)';
+                        break;
+                    case 'blue':
+                        body.style.background = 'linear-gradient(45deg, #1a3a5a, #2a5a8a)';
+                        break;
+                    case 'purple':
+                        body.style.background = 'linear-gradient(45deg, #3a2a4a, #5a4a7a)';
+                        break;
+                    case 'red':
+                        body.style.background = 'linear-gradient(45deg, #5a2a2a, #8a4a4a)';
+                        break;
+                    case 'green':
+                        body.style.background = 'linear-gradient(45deg, #2a4a3a, #4a7a5a)';
+                        break;
+                    case 'orange':
+                        body.style.background = 'linear-gradient(45deg, #7a4a2a, #aa7a4a)';
+                        break;
+                    case 'pink':
+                        body.style.background = 'linear-gradient(45deg, #7a3a5a, #aa5a8a)';
+                        break;
+                    case 'cyan':
+                        body.style.background = 'linear-gradient(45deg, #2a5a7a, #4a8aaa)';
+                        break;
+                    case 'teal':
+                        body.style.background = 'linear-gradient(45deg, #2a5a5a, #4a8a8a)';
+                        break;
+                    case 'indigo':
+                        body.style.background = 'linear-gradient(45deg, #4a3a7a, #7a5aaa)';
+                        break;
+                    case 'mint':
+                        body.style.background = 'linear-gradient(45deg, #3a7a6a, #5aaa9a)';
+                        break;
+                    case 'lavender':
+                        body.style.background = 'linear-gradient(45deg, #6a5a8a, #9a8aaa)';
+                        break;
+                    default:
+                        body.style.background = 'linear-gradient(to bottom, #0f0f0f, #1a1a1a)';
+                }
+                
+                // Close the sidebar
+                sidebar.classList.remove('active');
+                menuToggle.classList.remove('active');
+            });
+        });
+        
+        // Update limit info display
+        function updateLimitInfo() {
+            if (!isLimitEnabled) {
+                limitInfo.textContent = '';
+                return;
+            }
+            
+            const remaining = limit - count;
+            if (remaining > 0) {
+                limitInfo.textContent = `${remaining} tersedia`;
+                limitInfo.className = 'limit-info';
+            } else {
+                limitInfo.textContent = `${Math.abs(remaining)} lebih`;
+                limitInfo.className = 'limit-info negative';
+            }
+        }
+        
+        // Counter logic
+        function updateDisplay() {
+            countElement.textContent = count;
+            directInput.value = count;
+            updateLimitInfo();
+        }
+        
+        incrementBtn.addEventListener('click', () => {
+            if (isLimitEnabled && count >= limit) {
+                // Jangan tambah jika sudah mencapai batas
+                return;
+            }
+            count++;
+            updateDisplay();
+        });
+        
+        decrementBtn.addEventListener('click', () => {
+            count--;
+            updateDisplay();
+        });
+        
+        resetBtn.addEventListener('click', () => {
+            count = 0;
+            updateDisplay();
+        });
+        
+        // Fitur input angka langsung
+        setBtn.addEventListener('click', () => {
+            const inputValue = parseInt(directInput.value);
+            if (!isNaN(inputValue)) {
+                count = inputValue;
+                updateDisplay();
+                // Close the sidebar
+                sidebar.classList.remove('active');
+                menuToggle.classList.remove('active');
+            }
+        });
+        
+        // Allow Enter key to set the value
+        directInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const inputValue = parseInt(directInput.value);
+                if (!isNaN(inputValue)) {
+                    count = inputValue;
+                    updateDisplay();
+                    // Close the sidebar
+                    sidebar.classList.remove('active');
+                    menuToggle.classList.remove('active');
+                }
+            }
+        });
+        
+        // Limit toggle functionality
+        limitToggle.addEventListener('change', () => {
+            isLimitEnabled = limitToggle.checked;
+            const limitValue = parseInt(limitInput.value);
+            if (!isNaN(limitValue)) {
+                limit = limitValue;
+            }
+            updateLimitInfo();
+        });
+        
+        // Update limit value when changed
+        limitInput.addEventListener('change', () => {
+            const newValue = parseInt(limitInput.value);
+            if (!isNaN(newValue) && newValue > 0) {
+                limit = newValue;
+                updateLimitInfo();
+            }
+        });
+        
+        // Allow Enter key for limit input
+        limitInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const newValue = parseInt(limitInput.value);
+                if (!isNaN(newValue) && newValue > 0) {
+                    limit = newValue;
+                    updateLimitInfo();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
